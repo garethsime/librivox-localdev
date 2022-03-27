@@ -1,0 +1,6 @@
+[submodule "librivox-ansible"]
+	path = librivox-ansible
+	url = git@github.com:LibriVox/librivox-ansible.git
+[submodule "librivox-catalog"]
+	path = librivox-catalog
+	url = git@github.com:LibriVox/librivox-catalog.git
