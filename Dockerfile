@@ -13,4 +13,4 @@ RUN apt-get install git gcc make perl ansible gnupg python3-apt -y
 
 ADD librivox-ansible /librivox-ansible
 WORKDIR /librivox-ansible
-RUN ansible-playbook deploy.yml -i hosts/localdev/hosts --verbose
+RUN ansible-playbook deploy.yml -i hosts/localdev/hosts
