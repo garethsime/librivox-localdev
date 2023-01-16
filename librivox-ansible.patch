@@ -1,91 +1,102 @@
-diff --git a/deploy.yml b/deploy.yml
-index cb53627..9c9a94b 100644
---- a/deploy.yml
-+++ b/deploy.yml
-@@ -1,4 +1,5 @@
--- hosts: server
-+- hosts: all
+diff --git a/inventory.yaml b/inventory.yaml
+index 89a6974..5d77431 100644
+--- a/inventory.yaml
++++ b/inventory.yaml
+@@ -1,7 +1,8 @@
+ localdev:
+   hosts:
+-    192.168.100.212:
+-      ansible_port: 58568
++    192.168.15.13:
++      connection: local
++      # ansible_port: 58568
+       ci_env: development
+       ci_log_threshold: 4
+ 
+diff --git a/librivox.yaml b/librivox.yaml
+index 47fcd9b..168bb93 100644
+--- a/librivox.yaml
++++ b/librivox.yaml
+@@ -1,36 +1,37 @@
+-- hosts: production
+-  vars_files:
+-    - versions.yaml
+-    - production.enc
+-  roles:
+-    - { 'role': 'common', 'tags': 'common' }
+-    - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
+-    - { 'role': 'acf_pro', 'tags': 'acf_pro' }
+-    - { 'role': 'wiki', 'tags': 'wiki' }
+-    - { 'role': 'forum', 'tags': 'forum' }
+-    - { 'role': 'backup', 'tags': 'backup' }
+-    - { 'role': 'sftp_access', 'tags': 'sftp_access' }
+-    - { 'role': 'maintenance', 'tags': 'maintenance' }
+-  handlers:
+-    - import_tasks: handlers.yaml
++# - hosts: production
++#   vars_files:
++#     - versions.yaml
++#     - production.enc
++#   roles:
++#     - { 'role': 'common', 'tags': 'common' }
++#     - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
++#     - { 'role': 'acf_pro', 'tags': 'acf_pro' }
++#     - { 'role': 'wiki', 'tags': 'wiki' }
++#     - { 'role': 'forum', 'tags': 'forum' }
++#     - { 'role': 'backup', 'tags': 'backup' }
++#     - { 'role': 'sftp_access', 'tags': 'sftp_access' }
++#     - { 'role': 'maintenance', 'tags': 'maintenance' }
++#   handlers:
++#     - import_tasks: handlers.yaml
+ 
+-- hosts: staging
+-  vars_files:
+-    - versions.yaml
+-    - staging.enc
+-  roles:
+-    - { 'role': 'common', 'tags': 'common' }
+-    - { 'role': 'hosts_entry', 'tags': 'hosts_entry' }
+-    - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
+-    - { 'role': 'acf_pro', 'tags': 'acf_pro' }
+-    - { 'role': 'wiki', 'tags': 'wiki' }
+-    - { 'role': 'forum', 'tags': 'forum' }
+-    - { 'role': 'sftp_access', 'tags': 'sftp_access' }
+-    - { 'role': 'maintenance', 'tags': 'maintenance' }
+-  handlers:
+-    - import_tasks: handlers.yaml
++# - hosts: staging
++#   vars_files:
++#     - versions.yaml
++#     - staging.enc
++#   roles:
++#     - { 'role': 'common', 'tags': 'common' }
++#     - { 'role': 'hosts_entry', 'tags': 'hosts_entry' }
++#     - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
++#     - { 'role': 'acf_pro', 'tags': 'acf_pro' }
++#     - { 'role': 'wiki', 'tags': 'wiki' }
++#     - { 'role': 'forum', 'tags': 'forum' }
++#     - { 'role': 'sftp_access', 'tags': 'sftp_access' }
++#     - { 'role': 'maintenance', 'tags': 'maintenance' }
++#   handlers:
++#     - import_tasks: handlers.yaml
+ 
+ - hosts: localdev
 +  connection: local
    vars_files:
-     - versions.yml
-   roles:
-diff --git a/hosts/localdev/hosts b/hosts/localdev/hosts
-index 54ca8fc..f0531c7 100644
---- a/hosts/localdev/hosts
-+++ b/hosts/localdev/hosts
-@@ -1,2 +1,2 @@
- [server]
--192.168.100.134
-+localhost
-diff --git a/roles/blog+catalog/tasks/main.yml b/roles/blog+catalog/tasks/main.yml
-index e20f730..35a6b97 100644
---- a/roles/blog+catalog/tasks/main.yml
-+++ b/roles/blog+catalog/tasks/main.yml
-@@ -25,7 +25,10 @@
-   become: true
- 
- - name: Create catalog database
--  mysql_db: name=librivox_catalog state=present
-+  mysql_db: 
-+    name: librivox_catalog 
-+    state: present
-+      #login_unix_socket: /tmp/mysql.sock
-   become: true
-   notify:
-     - Import catalog database
-diff --git a/roles/common/tasks/main.yml b/roles/common/tasks/main.yml
-index 99cd405..6413668 100644
---- a/roles/common/tasks/main.yml
-+++ b/roles/common/tasks/main.yml
-@@ -12,12 +12,11 @@
-     - ppa:ondrej/php
-       # For the fix to https://bz.apache.org/bugzilla/show_bug.cgi?id=53555
-     - ppa:ondrej/apache2
--    - ppa:certbot/certbot
-   become: true
- 
- - name: Install packages
-   apt:
--    name: ['git', 'apache2', 'mariadb-server', 'python-mysqldb', 'php5.6-fpm', 'php5.6-mysql', 'php5.6-curl', 'python-certbot-apache']
-+    name: ['git', 'apache2', 'mariadb-server', 'python3-mysqldb', 'php5.6-fpm', 'php5.6-mysql', 'php5.6-curl', 'certbot', 'python3-certbot-apache', 'cron', 'openssh-server']
-     state: latest
-     update_cache: yes
-   become: true
-@@ -92,11 +91,6 @@
- 
- # SphinxSearch
- 
--- name: Sphinx PPA
--  apt_repository:
--      repo: ppa:builds/sphinxsearch-rel22
--  become: true
--
- - name: Install sphinx
-   apt: name=sphinxsearch state=latest update_cache=yes
-   become: true
-@@ -185,8 +179,8 @@
-   become: true
-   when: "'production' in inventory_file"
- 
--- name: Install python-openssl for self-signed cert
--  apt: name=python-openssl state=latest update_cache=yes
-+- name: Install python3-openssl for self-signed cert
-+  apt: name=python3-openssl state=latest update_cache=yes
-   become: true
-   when: "'localdev' in inventory_file"
- 
-@@ -218,14 +212,6 @@
-   become: true
-   when: "'localdev' in inventory_file"
- 
--# Staging hosts file entry
--- name: Staging hosts entry
+     - versions.yaml
+     - localdev.yaml
+diff --git a/roles/hosts_entry/tasks/main.yaml b/roles/hosts_entry/tasks/main.yaml
+index bd28f9a..bd5c6b4 100644
+--- a/roles/hosts_entry/tasks/main.yaml
++++ b/roles/hosts_entry/tasks/main.yaml
+@@ -1,5 +1,5 @@
+-- name: hosts entry
 -  lineinfile:
 -    dest: /etc/hosts
 -    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} librivox.org forum.librivox.org wiki.librivox.org"
 -  become: true
--  when: "'production' not in inventory_file"
--
- # Backups
- 
- - name: Upload backup script
++# - name: hosts entry
++#   lineinfile:
++#     dest: /etc/hosts
++#     line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} librivox.org forum.librivox.org wiki.librivox.org"
++#   become: true
