@@ -70,20 +70,3 @@ Then, you can open up the site here: https://librivox.org/search
 When we build the image, we make a new HTTPS certificate to use, so your browser
 should show you a big warning that the site isn't safe. You can just accept the
 risk and continue.
-
-## Things to fix
-
-* `$section_reader_clause` in `Librivox_search#advanced_title_search` isn't being used, so no need to
-  do the query for reader IDs.
-* `$section_project_ids` in `Librivox_search#advanced_title_search` isn't being used, so no need to
-  do the query.
-* No index on `search_table`
-  ```sql
-  CREATE INDEX IF NOT EXISTS search_table_source_id_idx ON search_table (source_table, source_id)
-  ```
-* Needs some perf testing
-  ```php8
-  $start = hrtime(true);
-  $end = hrtime(true);
-  echo "DURATION: " . ceil(($end - $start) / 1e6) . "ms\n";
-  ```
