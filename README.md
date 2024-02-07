@@ -70,3 +70,8 @@ Then, you can open up the site here: https://librivox.org/search
 When we build the image, we make a new HTTPS certificate to use, so your browser
 should show you a big warning that the site isn't safe. You can just accept the
 risk and continue.
+
+## Logging In
+
+Username: administrator
+Password: librivox
