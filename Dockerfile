@@ -23,32 +23,31 @@ RUN DEBIAN_FRONTEND=noninteractive apt-get install -y \
     sphinxsearch mp3gain unzip memcached imagemagick \
     openssh-server
 
+RUN DEBIAN_FRONTEND=noninteractive apt-get install -y php8.1-gd php8.1-imagick
+
 # Just dev stuff
 RUN DEBIAN_FRONTEND=noninteractive apt-get install -y tree vim silversearcher-ag php8.1-xdebug
-# Composer support
-RUN cd /usr/local/bin && \
-php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
-php -r "if (hash_file('sha384', 'composer-setup.php') === 'e21205b207c3ff031906575712edab6f13eb0b361f2085f1f1237b7126d785e826a450292b6cfd1d64d92e6563bbde02') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
-php composer-setup.php && \
-php -r "unlink('composer-setup.php');" && \
-mv composer.phar composer
 
 # Adds the librivox-ansible files and sets up this image
 ADD librivox-ansible /librivox-ansible
 WORKDIR /librivox-ansible
-RUN service mariadb start && ansible-playbook librivox.yaml \
+RUN service mariadb start && ansible-playbook localdev.yaml \
     --limit localdev \
     --inventory inventory.yaml \
     --verbose \
     --connection=local
 
-# Now that the databases are configured, we can load the scrubbed data
-RUN bunzip2 resources/librivox_catalog_scrubbed.sql.bz2
-RUN service mariadb start && \
-    mysql librivox_catalog < resources/librivox_catalog_scrubbed.sql
+# Composer support, the installers release once a month, so check at https://getcomposer.org/download/
+RUN cd /usr/local/bin && \
+    php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" && \
+    php -r "if (hash_file('sha384', 'composer-setup.php') === 'edb40769019ccf227279e3bdd1f5b2e9950eb000c3233ee85148944e555d97be3ea4f40c3c2fe73b22f875385f6a5155') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('composer-setup.php'); } echo PHP_EOL;" && \
+    php composer-setup.php && \
+    php -r "unlink('composer-setup.php');"
 
 # OK, this sounds dumb, but I can't figure out how else to get the files out
 RUN cp -r /librivox/www/librivox.org/catalog /librivox/www/librivox.org/catalog.bak
+
+WORKDIR /librivox/www/librivox.org/catalog
 
 # Starts up all the services that we need and drops us into a bash prompt
 # (the prompt is handy for debugging, but not really needed)

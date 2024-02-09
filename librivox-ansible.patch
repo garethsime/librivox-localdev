@@ -1,102 +1,31 @@
 diff --git a/inventory.yaml b/inventory.yaml
-index 89a6974..5d77431 100644
+index 7ccb8e8..89d1185 100644
 --- a/inventory.yaml
 +++ b/inventory.yaml
-@@ -1,7 +1,8 @@
+@@ -1,7 +1,7 @@
  localdev:
    hosts:
--    192.168.100.212:
--      ansible_port: 58568
-+    192.168.15.13:
+-    192.168.122.12:
+-      ansible_port: 22
++    192.168.15.14:
 +      connection: local
-+      # ansible_port: 58568
        ci_env: development
        ci_log_threshold: 4
  
-diff --git a/librivox.yaml b/librivox.yaml
-index 47fcd9b..168bb93 100644
---- a/librivox.yaml
-+++ b/librivox.yaml
-@@ -1,36 +1,37 @@
--- hosts: production
--  vars_files:
--    - versions.yaml
--    - production.enc
--  roles:
--    - { 'role': 'common', 'tags': 'common' }
--    - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
--    - { 'role': 'acf_pro', 'tags': 'acf_pro' }
--    - { 'role': 'wiki', 'tags': 'wiki' }
--    - { 'role': 'forum', 'tags': 'forum' }
--    - { 'role': 'backup', 'tags': 'backup' }
--    - { 'role': 'sftp_access', 'tags': 'sftp_access' }
--    - { 'role': 'maintenance', 'tags': 'maintenance' }
--  handlers:
--    - import_tasks: handlers.yaml
-+# - hosts: production
-+#   vars_files:
-+#     - versions.yaml
-+#     - production.enc
-+#   roles:
-+#     - { 'role': 'common', 'tags': 'common' }
-+#     - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
-+#     - { 'role': 'acf_pro', 'tags': 'acf_pro' }
-+#     - { 'role': 'wiki', 'tags': 'wiki' }
-+#     - { 'role': 'forum', 'tags': 'forum' }
-+#     - { 'role': 'backup', 'tags': 'backup' }
-+#     - { 'role': 'sftp_access', 'tags': 'sftp_access' }
-+#     - { 'role': 'maintenance', 'tags': 'maintenance' }
-+#   handlers:
-+#     - import_tasks: handlers.yaml
- 
--- hosts: staging
--  vars_files:
--    - versions.yaml
--    - staging.enc
--  roles:
--    - { 'role': 'common', 'tags': 'common' }
+diff --git a/localdev.yaml b/localdev.yaml
+index efed25c..8b3f2e2 100644
+--- a/localdev.yaml
++++ b/localdev.yaml
+@@ -5,12 +5,7 @@
+   roles:
+     - { 'role': 'common', 'tags': 'common' }
+     - { 'role': 'self-signed_cert', 'tags': 'self-signed_cert' }
 -    - { 'role': 'hosts_entry', 'tags': 'hosts_entry' }
--    - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
--    - { 'role': 'acf_pro', 'tags': 'acf_pro' }
+     - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
+-    - { 'role': 'acf_free', 'tags': 'acf_free' }
 -    - { 'role': 'wiki', 'tags': 'wiki' }
 -    - { 'role': 'forum', 'tags': 'forum' }
--    - { 'role': 'sftp_access', 'tags': 'sftp_access' }
--    - { 'role': 'maintenance', 'tags': 'maintenance' }
--  handlers:
--    - import_tasks: handlers.yaml
-+# - hosts: staging
-+#   vars_files:
-+#     - versions.yaml
-+#     - staging.enc
-+#   roles:
-+#     - { 'role': 'common', 'tags': 'common' }
-+#     - { 'role': 'hosts_entry', 'tags': 'hosts_entry' }
-+#     - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
-+#     - { 'role': 'acf_pro', 'tags': 'acf_pro' }
-+#     - { 'role': 'wiki', 'tags': 'wiki' }
-+#     - { 'role': 'forum', 'tags': 'forum' }
-+#     - { 'role': 'sftp_access', 'tags': 'sftp_access' }
-+#     - { 'role': 'maintenance', 'tags': 'maintenance' }
-+#   handlers:
-+#     - import_tasks: handlers.yaml
- 
- - hosts: localdev
-+  connection: local
-   vars_files:
-     - versions.yaml
-     - localdev.yaml
-diff --git a/roles/hosts_entry/tasks/main.yaml b/roles/hosts_entry/tasks/main.yaml
-index bd28f9a..bd5c6b4 100644
---- a/roles/hosts_entry/tasks/main.yaml
-+++ b/roles/hosts_entry/tasks/main.yaml
-@@ -1,5 +1,5 @@
--- name: hosts entry
--  lineinfile:
--    dest: /etc/hosts
--    line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} librivox.org forum.librivox.org wiki.librivox.org"
--  become: true
-+# - name: hosts entry
-+#   lineinfile:
-+#     dest: /etc/hosts
-+#     line: "{{ hostvars[inventory_hostname]['ansible_default_ipv4']['address'] }} librivox.org forum.librivox.org wiki.librivox.org"
-+#   become: true
+     - { 'role': 'db_import', 'tags': 'db_import' }
+-    - { 'role': 'restart_services', 'tags': 'restart_services' }
+   handlers:
+     - import_tasks: handlers.yaml
