@@ -1,0 +1,6 @@
+localdev:
+  hosts:
+    127.0.0.1:
+      connection: local
+      ci_env: development
+      ci_log_threshold: 4

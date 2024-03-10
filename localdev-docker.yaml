@@ -1,0 +1,11 @@
+- hosts: localdev
+  vars_files:
+    - vars/versions.yaml
+    - vars/localdev.yaml
+  roles:
+    - { 'role': 'common', 'tags': 'common' }
+    - { 'role': 'self-signed_cert', 'tags': 'self-signed_cert' }
+    - { 'role': 'blog+catalog', 'tags': 'blog+catalog' }
+    - { 'role': 'db_import', 'tags': 'db_import' }
+  handlers:
+    - import_tasks: handlers.yaml

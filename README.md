@@ -2,56 +2,50 @@
 
 ## Building
 
-Make sure you've definitely cloned the librivox-ansible submodule. You'll
-also need to apply the patch in `librivox-ansible.patch` to it. (Yeah, messy,
-I know.)
+First, make sure you've cloned the librivox-ansible submodule:
 
-You should be able to just run docker build now:
+
+```bash
+cd librivox-ansible
+git submodule init
+git submodule update
+cd ..
+```
+
+Now, back in the parent directory, you should be able to build the docker image:
 
 ```bash
 docker build -t librivox-local .
 ```
 
+(This step will take a while depending on your network speed and the speed of
+your local mirrors, but you only have to do it when there are breaking changes,
+which seems to be very infrequent.)
+
 ## Running
 
-```bash
-docker run --rm -it librivox-local
-```
-
-That'll drop you into a shell, which isn't strictly necessary, but is helpful
-for debugging.
-
-Or, if you need to get at the code, you can mount a volume, but I've not had
-much success working this way:
+There's some first-time setup that's required to get the librivox-catalog code
+out of the docker image and somewhere accessible:
 
 ```bash
-docker run --rm -it -v librivox-catalog:/librivox/www/librivox.org/catalog librivox-local
+./first-time-setup.sh
 ```
 
-WARNING: This makes a persistent volume. If you ever rebuild the docker images,
-then you really should wipe the volume and start again since the config files
-that ansible sets up may have changed.
-
-### Hackerman - Making it actually work
-
-The "it looks dumb, but works" way to get things going nicely is to do this:
-
+You should now have a `./librivox-catalog` directory that has all of the
+librivox-catalog code in it, including the git repo, and this is where you
+should point your IDE. From now on, you can start the server up any time like
+this:
 
 ```bash
 docker run --rm -it -v "$(pwd)"/librivox-catalog:/librivox/www/librivox.org/catalog librivox-local
 ```
 
-And then, _inside the container_ do:
+That will drop you into a bash shell _inside_ the container, which is mostly
+useful for debugging.
 
-```bash
-cp -a /librivox/www/librivox.org/catalog.bak/. /librivox/www/librivox.org/catalog
-```
-
-And then, _on the host_ do:
-
-```bash
-sudo chown -R $(whoami) librivox-catalog
-```
+NOTE: This will give you a new container every time with a fresh copy of the
+database. If you're precious about any custom data or config you've set up, then
+remove the `--rm` flag and `docker start`/`docker stop` the container as usual.
 
 ## Accessing the Site
 
@@ -71,7 +65,23 @@ When we build the image, we make a new HTTPS certificate to use, so your browser
 should show you a big warning that the site isn't safe. You can just accept the
 risk and continue.
 
-## Logging In
+## Appendix: What's with the freaky first-time setup?
 
-Username: administrator
-Password: librivox
+The Ansible playbooks provision everything into this directory:
+`/librivox/www/librivox.org/catalog`, including some additional config files
+that are not checked into the `librivox-catalog` repository. Without those
+config files, nothing will run.
+
+To work around this, what we do is:
+
+1. Back up the catalog files to `/librivox/www/librivox.org/catalog.bak`.
+2. Start the container with `./librivox-catalog` mounted over the top of
+   `/librivox/www/librivox.org/catalog`. At this point, that directory will be
+   empty.
+3. Inside the container, we copy everything from `catalog.bak` to `catalog`,
+   which brings the whole git repo and all of the config files we need. At this
+   point, you'll have a heap of stuff in `./librivox-catalog` on the host, but
+   since the files were created by the container, it'll all belong to the root
+   user.
+4. On the host, we change the ownership of the directory to be the current user
+   instead of root, which is generally what you want.
