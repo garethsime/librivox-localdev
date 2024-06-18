@@ -65,6 +65,15 @@ When we build the image, we make a new HTTPS certificate to use, so your browser
 should show you a big warning that the site isn't safe. You can just accept the
 risk and continue.
 
+## Caveats
+
+The site is running inside the container, so you don't actually have PHP or the
+database or anything set up on your main OS. This means that there are some
+operations that are best performed from inside the container:
+
+ - Running the tests
+ - Connecting to the database
+
 ## Appendix: What's with the freaky first-time setup?
 
 The Ansible playbooks provision everything into this directory:
